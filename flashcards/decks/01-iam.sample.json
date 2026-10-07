@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0",
+  "deck": {
+    "id": "01-iam",
+    "section": 1,
+    "title": "IAM — Identity and Access Management",
+    "sourceFile": "topic-guides/01-IAM.md",
+    "analogy": "AWS is a giant office building: users are employee badges, groups are departments, roles are temporary costumes, policies are the rules on the wall.",
+    "subtopics": [
+      { "id": "identities", "title": "Users, groups, roles" },
+      { "id": "policy-anatomy", "title": "Policy JSON anatomy" },
+      { "id": "evaluation", "title": "How AWS decides yes or no" },
+      { "id": "policy-types", "title": "The policy types table" },
+      { "id": "sts", "title": "STS and roles: how the costume gets put on" },
+      { "id": "cross-account", "title": "Cross-account access" },
+      { "id": "identity-center", "title": "IAM Identity Center" },
+      { "id": "mfa-root", "title": "MFA and the root account" }
+    ]
+  },
+  "cards": [
+    {
+      "id": "iam-001",
+      "type": "compare",
+      "subtopic": "identities",
+      "front": "What is the difference between an IAM **user** and an IAM **role**?",
+      "back": {
+        "answer": "A user is a permanent identity with a password/long-lived keys; a role has no permanent credentials and is *assumed* to get temporary credentials.",
+        "explanation": "Roles are used for services, cross-account access and federated humans.",
+        "mnemonic": "User = employee badge; role = temporary costume.",
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": ["users", "roles"],
+      "sourceHeading": "Users, groups, roles",
+      "examTip": null
+    },
+    {
+      "id": "iam-002",
+      "type": "fact",
+      "subtopic": "identities",
+      "front": "Can an IAM group contain other groups or roles?",
+      "back": { "answer": "No — groups contain **only users**.", "explanation": null, "mnemonic": null, "code": null },
+      "choices": null,
+      "difficulty": 1,
+      "tags": ["groups"],
+      "sourceHeading": "Users, groups, roles",
+      "examTip": null
+    },
+    {
+      "id": "iam-003",
+      "type": "scenario",
+      "subtopic": "identities",
+      "front": "An application on EC2 needs to write to DynamoDB. What's the MOST secure way to provide credentials?",
+      "back": {
+        "answer": "Attach an IAM role to the instance (instance profile).",
+        "explanation": "The instance gets auto-rotating temporary credentials from metadata; no keys touch the disk.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": [
+        { "text": "Create an IAM user and store its access keys in ~/.aws/credentials", "correct": false, "why": "Long-lived keys on compute can leak and never rotate." },
+        { "text": "Attach an IAM role via an instance profile", "correct": true, "why": "Temporary, auto-rotated credentials." },
+        { "text": "Bake access keys into the AMI", "correct": false, "why": "Keys in AMIs are always wrong." },
+        { "text": "Pass access keys as environment variables", "correct": false, "why": "Still long-lived keys on the box." }
+      ],
+      "difficulty": 3,
+      "tags": ["roles", "ec2", "least-privilege"],
+      "sourceHeading": "Question patterns",
+      "examTip": "\"MOST secure\" + EC2 needs AWS access → instance role"
+    },
+    {
+      "id": "iam-004",
+      "type": "trap",
+      "subtopic": "evaluation",
+      "front": "A user's policy clearly **Allows** an action, but it fails with Access Denied. What are the three usual causes?",
+      "back": {
+        "answer": "An explicit Deny somewhere, an SCP on the account, or a permission boundary.",
+        "explanation": "Explicit Deny always wins; Allow + Deny = Deny.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": ["policy-evaluation", "scp", "permission-boundary"],
+      "sourceHeading": "How AWS decides yes or no",
+      "examTip": "Mentions AWS Organizations → SCP"
+    },
+    {
+      "id": "iam-005",
+      "type": "fact",
+      "subtopic": "sts",
+      "front": "What is the default duration of STS AssumeRole temporary credentials, and the allowed range?",
+      "back": { "answer": "Default **1 hour**; range 15 minutes – 12 hours.", "explanation": null, "mnemonic": null, "code": null },
+      "choices": null,
+      "difficulty": 1,
+      "tags": ["sts"],
+      "sourceHeading": "STS and roles: how the costume gets put on",
+      "examTip": null
+    },
+    {
+      "id": "iam-006",
+      "type": "signal",
+      "subtopic": "pocket-card",
+      "front": "Keyword: **\"Federate Okta / Azure AD / corporate AD\"**",
+      "back": { "answer": "IAM Identity Center + SAML 2.0", "explanation": "For app *customers* (Google/Facebook login) use Cognito instead.", "mnemonic": null, "code": null },
+      "choices": null,
+      "difficulty": 1,
+      "tags": ["identity-center", "federation", "saml"],
+      "sourceHeading": "Pocket card",
+      "examTip": null
+    }
+  ]
+}
