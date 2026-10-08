@@ -10,4 +10,4 @@ id = "9c8fb5bbac5149b3a13c4da00b1fc2f8"
 
 [vars]
 # Comma-separated list of allowed origins (your Vercel URL). "*" allows any.
-ALLOWED_ORIGINS = "http://localhost:5173,https://aws-study-gamma.vercel.app
+ALLOWED_ORIGINS = "http://localhost:5173,https://aws-study-gamma.vercel.app"
