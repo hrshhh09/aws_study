@@ -1,3 +1,11 @@
 [
-  "01-iam.sample.json"
+  "01-iam.sample.json",
+  "02-s3.json",
+  "02-s3.part0.json",
+  "02-s3.part1.json",
+  "02-s3.part2.json",
+  "02-s3.part3.json",
+  "04-ebs-efs-instance-store.json",
+  "05-elb-auto-scaling.json",
+  "07-route53.json"
 ]

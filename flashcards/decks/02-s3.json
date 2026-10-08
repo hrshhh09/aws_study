@@ -1,0 +1,925 @@
+{
+  "schemaVersion": "1.0",
+  "deck": {
+    "id": "02-s3",
+    "section": 2,
+    "title": "S3 — Simple Storage Service",
+    "sourceFile": "topic-guides/02-S3.md",
+    "analogy": "S3 is an infinite valet parking garage for files: hand over the object, get a claim ticket (the key), and get the whole file back — you can't edit it while parked, only replace it.",
+    "subtopics": [
+      {
+        "id": "storage-classes-and-the-3-filter",
+        "title": "Storage classes and THE 3-filter algorithm"
+      },
+      {
+        "id": "the-two-special-classes-and-their-exact",
+        "title": "The two \"special\" classes and their exact signals"
+      },
+      {
+        "id": "lifecycle-versioning-replication",
+        "title": "Lifecycle, versioning, replication"
+      },
+      {
+        "id": "the-encryption-ladder-sorted-by-how",
+        "title": "The encryption ladder (sorted by how little you trust AWS)"
+      },
+      {
+        "id": "object-lock-worm",
+        "title": "Object Lock: WORM"
+      },
+      {
+        "id": "who-can-get-in-access-controls",
+        "title": "Who can get in: access controls"
+      },
+      {
+        "id": "access-logs-vs-cloudtrail",
+        "title": "Access Logs vs CloudTrail"
+      },
+      {
+        "id": "performance",
+        "title": "Performance"
+      },
+      {
+        "id": "events-and-querying",
+        "title": "Events and querying"
+      }
+    ]
+  },
+  "cards": [
+    {
+      "id": "s3-001",
+      "type": "concept",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "What kind of storage is Amazon S3, and how do you change part of an object?",
+      "back": {
+        "answer": "An object store; you can't edit bytes in place — you replace the whole object.",
+        "explanation": "Unlike a disk (EBS) or shared network filesystem (EFS).",
+        "mnemonic": "Valet garage: you can't change the engine while it's parked.",
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "s3",
+        "object-storage"
+      ],
+      "sourceHeading": "The idea",
+      "examTip": null
+    },
+    {
+      "id": "s3-002",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 bucket names: unique at what scope, and where does a bucket live?",
+      "back": {
+        "answer": "Globally unique across all of AWS; the bucket itself lives in one region you choose.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "s3",
+        "bucket"
+      ],
+      "sourceHeading": "The idea",
+      "examTip": null
+    },
+    {
+      "id": "s3-003",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "Maximum size of a single S3 object?",
+      "back": {
+        "answer": "5 TB (bucket capacity is unlimited).",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "s3",
+        "limits"
+      ],
+      "sourceHeading": "The idea",
+      "examTip": null
+    },
+    {
+      "id": "s3-004",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "When is S3 multipart upload recommended vs required?",
+      "back": {
+        "answer": "Recommended over 100 MB; required over 5 GB.",
+        "explanation": "A single PUT caps at 5 GB.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "s3",
+        "multipart-upload"
+      ],
+      "sourceHeading": "The idea",
+      "examTip": "> 5 GB → multipart"
+    },
+    {
+      "id": "s3-005",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "What durability does S3 promise, and does it vary by storage class?",
+      "back": {
+        "answer": "Eleven 9s (99.999999999%), same across every class.",
+        "explanation": "Classes differ in cost, availability and retrieval speed.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "s3",
+        "durability"
+      ],
+      "sourceHeading": "The idea",
+      "examTip": null
+    },
+    {
+      "id": "s3-006",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Standard: retrieval time, minimum storage duration, use case?",
+      "back": {
+        "answer": "Milliseconds; no minimum; frequently accessed hot data.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "s3-standard"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-007",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Intelligent-Tiering: retrieval time, minimum duration, use case?",
+      "back": {
+        "answer": "Milliseconds; no minimum; unknown/unpredictable access patterns.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "intelligent-tiering"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-008",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Standard-IA: retrieval time, minimum duration, use case?",
+      "back": {
+        "answer": "Milliseconds; 30 days; infrequent access needing instant retrieval.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "standard-ia"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-009",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 One Zone-IA: retrieval time, minimum duration, use case?",
+      "back": {
+        "answer": "Milliseconds; 30 days; infrequent AND re-creatable data (one AZ only).",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "one-zone-ia"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-010",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Glacier Instant Retrieval: retrieval time, minimum duration, use case?",
+      "back": {
+        "answer": "Milliseconds; 90 days; archive touched ~quarterly but needed instantly.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "glacier-instant"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-011",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Glacier Flexible Retrieval: retrieval options and minimum duration?",
+      "back": {
+        "answer": "Expedited 1–5 min, Standard 3–5 hr, Bulk 5–12 hr; 90-day minimum.",
+        "explanation": "Archive where minutes-to-hours retrieval is OK.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "glacier-flexible"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-012",
+      "type": "fact",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Glacier Deep Archive: retrieval options and minimum duration?",
+      "back": {
+        "answer": "Standard 12 hr, Bulk 48 hr; 180-day minimum. Cheapest class.",
+        "explanation": "It can never beat 12 hours.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "glacier-deep-archive"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-013",
+      "type": "concept",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "What are the three filters for choosing the most cost-effective S3 storage class?",
+      "back": {
+        "answer": "1) Access frequency picks the family; 2) retrieval-time requirement eliminates classes; 3) minimum storage duration. Cheapest survivor wins.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "s3",
+        "storage-classes"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": "most cost-effective storage class"
+    },
+    {
+      "id": "s3-014",
+      "type": "concept",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "S3 Filter 1: which class family matches each access frequency?",
+      "back": {
+        "answer": "Daily/constant → Standard; monthly-ish → IA; few times a year → Glacier; unknown → Intelligent-Tiering.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "storage-classes"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-015",
+      "type": "trap",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "Data needed within milliseconds, archived — can Glacier still be the answer?",
+      "back": {
+        "answer": "Yes, Glacier Instant Retrieval; milliseconds only kills Flexible and Deep Archive.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "glacier-instant"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": "\"within milliseconds\""
+    },
+    {
+      "id": "s3-016",
+      "type": "trap",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "Retrieval deadline is 8 hours and Glacier Deep Archive is cheapest. Pick it?",
+      "back": {
+        "answer": "No — Deep Archive can never deliver faster than 12 hours; any deadline under 12 hr disqualifies it.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "glacier-deep-archive"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": "12-hour floor"
+    },
+    {
+      "id": "s3-017",
+      "type": "concept",
+      "subtopic": "storage-classes-and-the-3-filter",
+      "front": "Why does S3 Standard win for data kept under 30 days?",
+      "back": {
+        "answer": "Every cheaper class bills a minimum duration (IA 30, Glacier Instant/Flexible 90, Deep Archive 180 days).",
+        "explanation": "Delete early and you pay the minimum anyway.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "s3-standard",
+        "min-duration"
+      ],
+      "sourceHeading": "Storage classes and THE 3-filter algorithm",
+      "examTip": null
+    },
+    {
+      "id": "s3-018",
+      "type": "concept",
+      "subtopic": "the-two-special-classes-and-their-exact",
+      "front": "When is S3 One Zone-IA the correct choice?",
+      "back": {
+        "answer": "Only when data is re-creatable or a secondary copy (e.g. regenerable thumbnails, replicas, secondary backups).",
+        "explanation": "Data sits in a single AZ — lose the AZ, lose the data; ~20% cheaper.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "one-zone-ia"
+      ],
+      "sourceHeading": "The two \"special\" classes and their exact signals",
+      "examTip": "\"can be regenerated / secondary copy\""
+    },
+    {
+      "id": "s3-019",
+      "type": "fact",
+      "subtopic": "the-two-special-classes-and-their-exact",
+      "front": "What extra fee does S3 Intelligent-Tiering charge?",
+      "back": {
+        "answer": "A monitoring fee per object.",
+        "explanation": "Millions of tiny objects add up.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "intelligent-tiering"
+      ],
+      "sourceHeading": "The two \"special\" classes and their exact signals",
+      "examTip": null
+    },
+    {
+      "id": "s3-020",
+      "type": "fact",
+      "subtopic": "the-two-special-classes-and-their-exact",
+      "front": "Which objects does S3 Intelligent-Tiering never tier?",
+      "back": {
+        "answer": "Objects under 128 KB — they stay at Standard rates.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "intelligent-tiering"
+      ],
+      "sourceHeading": "The two \"special\" classes and their exact signals",
+      "examTip": null
+    },
+    {
+      "id": "s3-021",
+      "type": "fact",
+      "subtopic": "the-two-special-classes-and-their-exact",
+      "front": "How long does an object pay Standard price before Intelligent-Tiering moves it down?",
+      "back": {
+        "answer": "About 30 days of observed inactivity.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "intelligent-tiering"
+      ],
+      "sourceHeading": "The two \"special\" classes and their exact signals",
+      "examTip": null
+    },
+    {
+      "id": "s3-022",
+      "type": "trap",
+      "subtopic": "the-two-special-classes-and-their-exact",
+      "front": "Access pattern is known (heavy for 30 days, then rare). Use Intelligent-Tiering?",
+      "back": {
+        "answer": "No — a lifecycle rule is cheaper and deterministic. IT only when access is unknown/unpredictable/changing.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "intelligent-tiering",
+        "lifecycle"
+      ],
+      "sourceHeading": "The two \"special\" classes and their exact signals",
+      "examTip": "known pattern → lifecycle"
+    },
+    {
+      "id": "s3-023",
+      "type": "concept",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "What do S3 lifecycle transition vs expiration actions do?",
+      "back": {
+        "answer": "Transition moves objects down the class ladder on a schedule; expiration deletes them.",
+        "explanation": "E.g. 30 days → Standard-IA, 90 → Glacier, 365 → delete.",
+        "mnemonic": "Automated conveyor belt.",
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "lifecycle"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": null
+    },
+    {
+      "id": "s3-024",
+      "type": "concept",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "Besides transitions, what cleanup can S3 lifecycle rules do?",
+      "back": {
+        "answer": "Delete old versions and abort incomplete multipart uploads.",
+        "explanation": "Incomplete multipart uploads silently cost money forever otherwise.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "lifecycle",
+        "multipart-upload"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": null
+    },
+    {
+      "id": "s3-025",
+      "type": "concept",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "With S3 versioning on, what happens on delete?",
+      "back": {
+        "answer": "A delete marker is placed on top; old versions remain, and removing the marker restores the object.",
+        "explanation": "Overwrite creates a new version on top.",
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "versioning"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": "protect against accidental overwrite/deletion"
+    },
+    {
+      "id": "s3-026",
+      "type": "fact",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "Can S3 versioning be disabled once enabled?",
+      "back": {
+        "answer": "No — only suspended.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "versioning"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": null
+    },
+    {
+      "id": "s3-027",
+      "type": "concept",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "What does S3 MFA Delete require?",
+      "back": {
+        "answer": "The root user's MFA device to permanently delete a version or suspend versioning.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "mfa-delete",
+        "versioning"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": "extra protection against accidental or malicious deletes"
+    },
+    {
+      "id": "s3-028",
+      "type": "compare",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "S3 CRR vs SRR: use cases?",
+      "back": {
+        "answer": "CRR: compliance, DR, lower latency in another region. SRR: log aggregation, prod → test copies in same region.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "crr",
+        "srr"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": null
+    },
+    {
+      "id": "s3-029",
+      "type": "fact",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "What is required for S3 replication?",
+      "back": {
+        "answer": "Versioning ON in both source and destination buckets.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "replication",
+        "versioning"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": null
+    },
+    {
+      "id": "s3-030",
+      "type": "trap",
+      "subtopic": "lifecycle-versioning-replication",
+      "front": "You enable S3 replication and expect existing objects to copy. What happens, and what's the fix?",
+      "back": {
+        "answer": "Only NEW objects replicate; use S3 Batch Replication for existing ones.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "replication",
+        "batch-replication"
+      ],
+      "sourceHeading": "Lifecycle, versioning, replication",
+      "examTip": "existing objects"
+    },
+    {
+      "id": "s3-031",
+      "type": "concept",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "Encryption at rest vs in transit — and what provides in-transit for S3?",
+      "back": {
+        "answer": "At rest = on disk; in transit = over the network, provided by TLS (HTTPS).",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "encryption",
+        "tls"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": null
+    },
+    {
+      "id": "s3-032",
+      "type": "fact",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "SSE-S3: who holds the key and when to pick it?",
+      "back": {
+        "answer": "AWS, fully managed (AES-256); the default on new objects — zero effort.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "sse-s3"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": "\"just encrypt it\""
+    },
+    {
+      "id": "s3-033",
+      "type": "fact",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "SSE-KMS: who holds the key and why pick it?",
+      "back": {
+        "answer": "A KMS key you control; audit every key use in CloudTrail, control rotation and who decrypts.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "sse-kms",
+        "kms"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": "\"audit\""
+    },
+    {
+      "id": "s3-034",
+      "type": "fact",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "SSE-C: who holds the key and how is it sent?",
+      "back": {
+        "answer": "You supply it on every request over mandatory HTTPS; AWS encrypts but never stores it.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "sse-c"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": null
+    },
+    {
+      "id": "s3-035",
+      "type": "fact",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "Client-side encryption for S3: what's the guarantee?",
+      "back": {
+        "answer": "You encrypt before upload; AWS never sees plaintext.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "client-side-encryption"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": "\"AWS must never see plaintext\""
+    },
+    {
+      "id": "s3-036",
+      "type": "concept",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "Heavy SSE-KMS traffic hits KMS request limits/costs. Fix and trade-off?",
+      "back": {
+        "answer": "S3 Bucket Key — cuts KMS API costs ~99%, but gives a coarser per-object CloudTrail audit trail.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "bucket-key",
+        "sse-kms"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": null
+    },
+    {
+      "id": "s3-037",
+      "type": "trap",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "Question asks to encrypt S3 data in transit; a KMS answer is offered. Pick it?",
+      "back": {
+        "answer": "No — in transit means TLS/HTTPS, not KMS.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "tls",
+        "encryption"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": null
+    },
+    {
+      "id": "s3-038",
+      "type": "trap",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "How do you enforce HTTPS-only access to an S3 bucket?",
+      "back": {
+        "answer": "Bucket policy that Denies requests where aws:SecureTransport = false.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": "\"Effect\":\"Deny\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}}"
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "bucket-policy",
+        "tls"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": "aws:SecureTransport"
+    },
+    {
+      "id": "s3-039",
+      "type": "trap",
+      "subtopic": "the-encryption-ladder-sorted-by-how",
+      "front": "Default encryption turned on — are existing S3 objects now encrypted?",
+      "back": {
+        "answer": "No; encryption applies at write time. Use S3 Batch Operations to re-write existing objects.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "batch-operations",
+        "encryption"
+      ],
+      "sourceHeading": "The encryption ladder (sorted by how little you trust AWS)",
+      "examTip": "encrypt EXISTING objects"
+    },
+    {
+      "id": "s3-040",
+      "type": "concept",
+      "subtopic": "object-lock-worm",
+      "front": "What does S3 Object Lock provide?",
+      "back": {
+        "answer": "WORM (Write Once, Read Many): objects can't be deleted or overwritten for a retention period.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "object-lock"
+      ],
+      "sourceHeading": "Object Lock: WORM",
+      "examTip": null
+    },
+    {
+      "id": "s3-041",
+      "type": "fact",
+      "subtopic": "object-lock-worm",
+      "front": "Requirements for enabling S3 Object Lock?",
+      "back": {
+        "answer": "Versioning must be on, and it can only be enabled at bucket creation time.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 1,
+      "tags": [
+        "object-lock"
+      ],
+      "sourceHeading": "Object Lock: WORM",
+      "examTip": "at bucket creation"
+    },
+    {
+      "id": "s3-042",
+      "type": "compare",
+      "subtopic": "object-lock-worm",
+      "front": "Object Lock Compliance mode: who can delete during retention?",
+      "back": {
+        "answer": "Nobody — not admins, not even root.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "object-lock"
+      ],
+      "sourceHeading": "Object Lock: WORM",
+      "examTip": "\"regulators require\", \"even administrators\""
+    },
+    {
+      "id": "s3-043",
+      "type": "compare",
+      "subtopic": "object-lock-worm",
+      "front": "Object Lock Governance mode: who can delete during retention?",
+      "back": {
+        "answer": "Users with a special bypass permission.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "object-lock"
+      ],
+      "sourceHeading": "Object Lock: WORM",
+      "examTip": "\"privileged users may override\""
+    },
+    {
+      "id": "s3-044",
+      "type": "compare",
+      "subtopic": "object-lock-worm",
+      "front": "S3 Legal Hold: who can delete and for how long?",
+      "back": {
+        "answer": "No one, indefinitely — no expiry, stays until explicitly removed.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "legal-hold",
+        "object-lock"
+      ],
+      "sourceHeading": "Object Lock: WORM",
+      "examTip": "\"lawsuit\", litigation"
+    },
+    {
+      "id": "s3-045",
+      "type": "trap",
+      "subtopic": "object-lock-worm",
+      "front": "\"Even the root user cannot delete\" — Governance or Compliance mode?",
+      "back": {
+        "answer": "Compliance, never Governance.",
+        "explanation": null,
+        "mnemonic": null,
+        "code": null
+      },
+      "choices": null,
+      "difficulty": 2,
+      "tags": [
+        "object-lock"
+      ],
+      "sourceHeading": "Object Lock: WORM",
+      "examTip": null
+    }
+  ]
+}
